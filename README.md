@@ -2,7 +2,9 @@
 
 An ESP-IDF v5.4 calculator demo for the [Seeed Studio reTerminal Sticky](https://www.seeedstudio.com/sticky/).
 
-<img src="page.jpg" alt="reTerminal Sticky Calculator" width="400">
+<div align="center">
+  <img src="page.jpg" alt="reTerminal Sticky Calculator" width="400">
+</div>
 
 It provides two 480 x 800 portrait E-Ink calculator pages:
 
