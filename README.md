@@ -2,6 +2,8 @@
 
 An ESP-IDF v5.4 calculator demo for the [Seeed Studio reTerminal Sticky](https://www.seeedstudio.com/sticky/).
 
+![reTerminal Sticky Calculator](page.jpg)
+
 It provides two 480 x 800 portrait E-Ink calculator pages:
 
 - **TI-2500 Datamath** - a retro calculator inspired by the 1972 TI-2500 Datamath.
