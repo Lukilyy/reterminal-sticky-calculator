@@ -1,0 +1,31 @@
+idf_component_register(
+    SRCS
+        "main.cpp"
+        "app/calculator_app.cpp"
+        "app/calculator_engine.cpp"
+        "assets/ti_logo.cpp"
+        "assets/iphone_inter_font.cpp"
+        "assets/calculator_wallpaper.cpp"
+        "board/calculator_board.cpp"
+        "devices/sticky_display.cpp"
+        "devices/sticky_ai_button.cpp"
+        "devices/sticky_battery.cpp"
+        "devices/sticky_buttons.cpp"
+        "devices/sticky_buzzer.cpp"
+        "devices/sticky_charger.cpp"
+        "devices/sticky_touch.cpp"
+        "devices/sticky_power.cpp"
+        "ui/canvas.cpp"
+        "ui/calculator_wallpaper_view.cpp"
+        "ui/font.cpp"
+        "ui/datamath_view.cpp"
+        "ui/iphone_calculator_view.cpp"
+    INCLUDE_DIRS
+        "."
+        "app"
+        "board"
+        "devices"
+        "ui"
+    REQUIRES bq27220 button esp_driver_gpio esp_driver_i2c esp_driver_ledc esp_driver_spi esp_hw_support
+             gt911 seeed_epaper
+)

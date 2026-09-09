@@ -1,0 +1,37 @@
+# ESP-IDF generated files
+build/
+sdkconfig
+sdkconfig.old
+managed_components/
+
+# IDE and local tools
+.vscode/
+.idea/
+.cache/
+.clangd/
+.settings/
+
+# Python conversion tools
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# OS/editor artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.suo
+*.user
+*.sln.docstates
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.orig
+*.preview.png
+*_preview.png
