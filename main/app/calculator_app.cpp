@@ -4,6 +4,7 @@
 #include <atomic>
 #include <array>
 #include <cstring>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -73,11 +74,13 @@ struct IphoneHistoryEntry {
 };
 
 struct IphoneHistoryModel {
+    std::mutex mutex;
     std::array<IphoneHistoryEntry, kIphoneHistoryCapacity> entries;
     size_t count = 0;
 
     void add(std::string expression, const char *result)
     {
+        const std::lock_guard<std::mutex> lock(mutex);
         if (expression.size() >= 2 &&
             expression.compare(expression.size() - 2, 2, " =") == 0) {
             expression.erase(expression.size() - 2);
@@ -219,12 +222,21 @@ esp_err_t draw_and_refresh_full(DisplayTaskContext &context,
     }
     IphoneCalculatorView iphone(*context.canvas);
     if (context.history_open->load()) {
-        std::array<IphoneHistoryItem, kIphoneHistoryCapacity> items = {};
-        for (size_t index = 0; index < context.history->count; ++index) {
-            items[index] = {context.history->entries[index].expression.c_str(),
-                            context.history->entries[index].result.c_str()};
+        // Own the strings while drawing; never retain pointers into the model
+        // after releasing its lock or hold that lock during an E-Ink refresh.
+        std::array<IphoneHistoryEntry, kIphoneHistoryCapacity> snapshot;
+        size_t count = 0;
+        {
+            const std::lock_guard<std::mutex> lock(context.history->mutex);
+            snapshot = context.history->entries;
+            count = context.history->count;
         }
-        iphone.draw_history(items.data(), context.history->count);
+        std::array<IphoneHistoryItem, kIphoneHistoryCapacity> items = {};
+        for (size_t index = 0; index < count; ++index) {
+            items[index] = {snapshot[index].expression.c_str(),
+                            snapshot[index].result.c_str()};
+        }
+        iphone.draw_history(items.data(), count);
     } else {
         iphone.draw(text, expression);
     }
@@ -267,8 +279,17 @@ void display_task(void *context_pointer)
             datamath.draw_switch_state(context.engine->mode());
             int x = 0, y = 0, width = 0, height = 0;
             DatamathView::switch_bounds(x, y, width, height);
-            const esp_err_t result =
-                sticky_display_refresh_partial_area(x, y, width, height);
+            if (partial_refresh_count < kFullRefreshInterval) {
+                ++partial_refresh_count;
+            }
+            const bool full_refresh_due =
+                partial_refresh_count >= kFullRefreshInterval;
+            const esp_err_t result = full_refresh_due
+                ? sticky_display_refresh_monochrome()
+                : sticky_display_refresh_partial_area(x, y, width, height);
+            if (result == ESP_OK && full_refresh_due) {
+                partial_refresh_count = 0;
+            }
             if (result != ESP_OK) {
                 ESP_LOGE(kTag, "Switch refresh failed: %s",
                          esp_err_to_name(result));
@@ -289,7 +310,10 @@ void display_task(void *context_pointer)
         }
         if (update.page != context.current_page->load()) continue;
 
-        ++partial_refresh_count;
+        // Keep a failed full refresh due until a subsequent attempt succeeds.
+        if (partial_refresh_count < kFullRefreshInterval) {
+            ++partial_refresh_count;
+        }
         esp_err_t result = ESP_OK;
         if (partial_refresh_count >= kFullRefreshInterval) {
             result = draw_and_refresh_full(context, update.page, update.text,

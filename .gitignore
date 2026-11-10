@@ -35,3 +35,9 @@ Desktop.ini
 *.orig
 *.preview.png
 *_preview.png
+
+# Release binaries
+release/
+
+# Internal hardware references and migration notes
+/codex/

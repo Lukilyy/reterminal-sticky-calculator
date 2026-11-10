@@ -70,10 +70,13 @@ bool StickyTouch::init()
              controller_.address());
     event_queue_ = xQueueCreate(8, sizeof(StickyTouchPoint));
     if (event_queue_ == nullptr) return false;
+    stop_requested_.store(false);
+    task_stopped_.store(false);
     if (xTaskCreate(touch_task_entry, "calculator_touch", kTaskStackSize,
                     this, kTaskPriority, &task_handle_) != pdPASS) {
         vQueueDelete(event_queue_);
         event_queue_ = nullptr;
+        task_stopped_.store(true);
         return false;
     }
     return true;
@@ -82,7 +85,12 @@ bool StickyTouch::init()
 void StickyTouch::stop()
 {
     if (task_handle_ != nullptr) {
-        vTaskDelete(task_handle_);
+        stop_requested_.store(true);
+        // Let an in-flight GT911 transaction finish before the caller powers
+        // down touch. The worker acknowledges only after its final access.
+        while (!task_stopped_.load()) {
+            vTaskDelay(1);
+        }
         task_handle_ = nullptr;
     }
     touching_ = false;
@@ -105,13 +113,15 @@ void StickyTouch::touch_task_entry(void *context)
 void StickyTouch::touch_task()
 {
     TickType_t next_poll = xTaskGetTickCount();
-    while (true) {
+    while (!stop_requested_.load()) {
         StickyTouchPoint point;
         if (read_tap(point) && xQueueSend(event_queue_, &point, 0) != pdTRUE) {
             ESP_LOGW(kTag, "Touch event queue full");
         }
         vTaskDelayUntil(&next_poll, kPollInterval);
     }
+    task_stopped_.store(true);
+    vTaskDelete(nullptr);
 }
 
 bool StickyTouch::read_tap(StickyTouchPoint &point)

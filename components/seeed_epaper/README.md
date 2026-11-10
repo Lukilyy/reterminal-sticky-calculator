@@ -4,6 +4,7 @@
 
 - `UC8179`：reTerminal E1001
 - `SSD1677`：reTerminal E1005
+- `SSD2677`：reTerminal Sticky 新版屏幕控制器
 
 设计目标：
 
@@ -35,4 +36,10 @@
 - `epaper_panel.c`：GPIO / SPI / 像素转换 / 会话管理
 - `driver/uc8179.c`：UC8179 控制器实现
 - `driver/ssd1677.c`：SSD1677 控制器实现
+- `driver/ssd2677.c`：SSD2677 控制器实现
 
+## SSD controller detection
+
+The SSD-family entry reads register `0x70`: `0x07` selects SSD2677; other values select SSD1677.
+Configure the SPI device with `SPI_DEVICE_HALFDUPLEX | SPI_DEVICE_3WIRE` for bidirectional MOSI readback.
+The component applies the detected controller's BUSY polarity, reset timing and refresh data format.

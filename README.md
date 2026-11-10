@@ -19,8 +19,9 @@ It provides two 480 x 800 portrait E-Ink calculator pages:
 - Either UP or DOWN cycles between the Datamath and Modern Calculator pages
 - Battery percentage and charging-state logging
 - 1-bit black-and-white E-Ink refresh, with periodic full refreshes to limit ghosting
+- Automatic SSD1677 / SSD2677 controller detection in the same firmware
 - AI short press clears the active calculation and fully refreshes the page
-- AI long press (about one second) powers the device off or wakes it
+- AI long press (about one second) powers the device off; wake-up uses a 500 ms hold confirmation after board initialization
 - Cold boot shows the calculator wallpaper and enters Deep Sleep until the AI button is held
 
 ## Requirements
@@ -30,6 +31,19 @@ It provides two 480 x 800 portrait E-Ink calculator pages:
 - USB-C cable
 
 The target is `esp32s3`, with 32 MB flash and Octal PSRAM enabled.
+
+## Firmware download
+
+Download the merged [Calculator v2.0.0 firmware](https://github.com/Lukilyy/reterminal-sticky-calculator/releases/download/v2.0.0/reterminal-sticky-calculator-v2.0.0.bin) from [GitHub Releases](https://github.com/Lukilyy/reterminal-sticky-calculator/releases/tag/v2.0.0).
+The same firmware supports SSD1677 and SSD2677 displays.
+
+Flash the complete BIN at **0x0**, using ESP32-S3, DIO, 80 MHz and 32 MB flash settings:
+
+```bash
+python -m esptool --chip esp32s3 --port COM6 --baud 460800 write_flash --flash_mode dio --flash_freq 80m --flash_size 32MB 0x0 reterminal-sticky-calculator-v2.0.0.bin
+```
+
+Replace `COM6` with your device's serial port.
 
 ## Build and flash
 
@@ -45,7 +59,7 @@ idf.py -p COM6 flash monitor
 
 Replace `COM6` with the Sticky serial port. Use `Ctrl+]` to leave the serial monitor.
 
-After flashing, the wallpaper is shown and the device sleeps. Hold the AI button for about one second to start Calculator.
+After flashing, the wallpaper is shown and the device sleeps. Hold the AI button until the startup beep to start Calculator. Wake-up includes board initialization followed by a 500 ms hold confirmation.
 
 ## Controls
 
@@ -68,7 +82,7 @@ main/
 `-- ui/        Canvas plus Datamath, Modern Calculator, and wallpaper views
 assets/        Wallpaper source image and Inter license
 tools/         Reproducible wallpaper and font conversion scripts
-components/    BQ27220, GT911, button, and SSD1677-related components
+components/    BQ27220, GT911, button, and SSD1677 / SSD2677 display components
 ```
 
 ## Credits and third-party notices

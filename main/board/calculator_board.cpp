@@ -59,8 +59,8 @@ esp_err_t calculator_board_init()
     if (result != ESP_OK) return result;
     result = gpio_set_level(static_cast<gpio_num_t>(PIN_POWER_LOCK), 1);
     if (result != ESP_OK) return result;
-    result = gpio_install_isr_service(0);
-    if (result != ESP_OK && result != ESP_ERR_INVALID_STATE) return result;
+    // The display component installs the shared GPIO ISR service before the
+    // touch and button devices start. Do not install it twice on every boot.
     result = output(static_cast<gpio_num_t>(PIN_SD_CS), 1);
     if (result != ESP_OK) return result;
     result = output(static_cast<gpio_num_t>(PIN_SD_EN), 1);

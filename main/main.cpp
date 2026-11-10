@@ -29,7 +29,7 @@ extern "C" void app_main()
             ESP_LOGW(kTag, "Unexpected deep-sleep wake; returning to sleep");
             sticky_power_enter_deep_sleep();
         }
-        if (!sticky_power_confirm_ai_button_hold(1000)) {
+        if (!sticky_power_confirm_ai_button_hold(500)) {
             sticky_power_enter_deep_sleep();
         }
         suppress_ai_until_release = true;

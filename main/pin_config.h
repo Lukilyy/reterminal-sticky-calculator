@@ -44,7 +44,7 @@
 #define PIN_TOUCH_INT       21
 #define PIN_TOUCH_RST       41
 
-// E-paper SSD1677 (SPI)
+// E-paper SSD1677 / SSD2677 (shared SPI)
 #define PIN_EPD_MOSI        14
 #define PIN_EPD_CLK         13
 #define PIN_EPD_MISO        12

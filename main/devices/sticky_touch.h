@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <atomic>
 
 #include "driver/i2c_master.h"
 #include "freertos/FreeRTOS.h"
@@ -30,6 +31,8 @@ private:
     GT911 controller_;
     QueueHandle_t event_queue_ = nullptr;
     TaskHandle_t task_handle_ = nullptr;
+    std::atomic<bool> stop_requested_{false};
+    std::atomic<bool> task_stopped_{true};
     bool touching_ = false;
     StickyTouchPoint start_ = {};
     StickyTouchPoint last_ = {};
